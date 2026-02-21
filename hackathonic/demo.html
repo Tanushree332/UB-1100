@@ -1,0 +1,657 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LearnQuest - Gamified Learning Platform</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f0f8ff;
+            color: #333;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            flex-direction: column;
+        }
+        header {
+            text-align: center;
+            padding: 20px;
+            background-color: #4CAF50;
+            color: white;
+            width: 100%;
+        }
+        .container {
+            max-width: 800px;
+            padding: 20px;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+            margin: 20px;
+        }
+        form {
+            display: flex;
+            flex-direction: column;
+        }
+        input, select, button, textarea {
+            margin: 10px 0;
+            padding: 10px;
+            font-size: 16px;
+        }
+        button {
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        .hidden {
+            display: none;
+        }
+        .domain-card {
+            background: #e0f7fa;
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        .domain-card:hover {
+            background: #b2ebf2;
+        }
+        .domain-card.selected {
+            background: #80deea;
+        }
+        #progress-bar {
+            width: 100%;
+            background: #ddd;
+            height: 20px;
+            margin: 10px 0;
+        }
+        #progress {
+            height: 100%;
+            background: #4CAF50;
+            width: 0%;
+            transition: width 0.5s;
+        }
+        #game-canvas {
+            border: 1px solid #ccc;
+            margin: 20px 0;
+            display: block;
+            width: 400px;
+            height: 200px;
+        }
+        .language-selector {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+        }
+        .sub-domain {
+            margin-left: 20px;
+            display: none;
+        }
+        .animation {
+            animation: fadeIn 1s ease-in-out;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        #voice-assistant {
+            margin: 10px 0;
+        }
+        #doubt-section {
+            margin-top: 20px;
+        }
+        #news-list {
+            list-style-type: none;
+            padding: 0;
+        }
+        #news-list li {
+            background: #f9f9f9;
+            padding: 10px;
+            margin: 5px 0;
+            border-radius: 5px;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>LearnQuest: Your Gamified Learning Adventure</h1>
+        <p>Hi Tanushree! Learn anything from singing to coding in a fun, interactive way, right here in Bengaluru!</p>
+    </header>
+
+    <select class="language-selector" id="language-select" onchange="changeLanguage()">
+        <option value="en">English</option>
+        <option value="hi">हिंदी (Hindi)</option>
+        <option value="kn">ಕನ್ನಡ (Kannada)</option>
+        <!-- Add more languages as needed -->
+    </select>
+
+    <div class="container" id="registration">
+        <h2>Register to Start Your Journey</h2>
+        <form id="reg-form">
+            <input type="email" id="email" placeholder="Email" required>
+            <input type="tel" id="phone" placeholder="Phone Number (optional)">
+            <button type="button" onclick="sendOTP()">Send OTP</button>
+            <input type="text" id="otp" placeholder="Enter OTP" class="hidden">
+            <button type="button" onclick="verifyOTP()" class="hidden" id="verify-btn">Verify OTP</button>
+        </form>
+    </div>
+
+    <div class="container hidden" id="domain-selection">
+        <h2>Select Your Learning Domains</h2>
+        <p>You can choose multiple! Click to select.</p>
+        <div class="domain-card" data-domain="singing" onclick="toggleDomain(this)">Singing 🎤</div>
+        <div class="sub-domain hidden" id="sub-singing">
+            <p>Sub-types: Classical, Pop, etc.</p>
+            <!-- Add checkboxes or selections -->
+        </div>
+        <div class="domain-card" data-domain="dancing" onclick="toggleDomain(this)">Dancing 💃</div>
+        <div class="sub-domain hidden" id="sub-dancing">
+            <select id="dance-type">
+                <option value="hiphop">Hip-Hop</option>
+                <option value="classical">Classical</option>
+                <option value="bollywood">Bollywood</option>
+            </select>
+        </div>
+        <div class="domain-card" data-domain="drawing" onclick="toggleDomain(this)">Drawing 🎨</div>
+        <div class="domain-card" data-domain="business" onclick="toggleDomain(this)">Business 💼</div>
+        <div class="domain-card" data-domain="coding" onclick="toggleDomain(this)">Coding 💻</div>
+        <div class="sub-domain hidden" id="sub-coding">
+            <select id="coding-type">
+                <option value="game-dev">Game Development</option>
+                <option value="web-dev">Web Development</option>
+            </select>
+        </div>
+        <div class="domain-card" data-domain="upsc" onclick="toggleDomain(this)">UPSC Exams 📚</div>
+        <button onclick="proceedToAssessment()">Proceed</button>
+    </div>
+
+    <div class="container hidden" id="assessment">
+        <h2>Initial Assessment</h2>
+        <p>Tell us about your experience in the selected domains.</p>
+        <select id="experience-level">
+            <option value="new">I'm new here</option>
+            <option value="basic">I know the basics</option>
+            <option value="intermediate">I'm intermediate</option>
+            <option value="advanced">I'm advanced</option>
+        </select>
+        <button onclick="startAssessment()">Start Assessment</button>
+        <div id="test-questions" class="hidden">
+            <p id="question-text">Loading question...</p>
+            <input type="text" id="answer" placeholder="Your answer">
+            <button onclick="submitAnswer()">Submit</button>
+        </div>
+    </div>
+
+    <div class="container hidden" id="learning-path">
+        <h2>Your Personalized Learning Path</h2>
+        <p>Based on your assessment, here's your path!</p>
+        <ul id="path-steps"></ul>
+        <div id="progress-bar">
+            <div id="progress"></div>
+        </div>
+        <button onclick="startLesson()">Start Lesson</button>
+    </div>
+
+    <div class="container hidden" id="lesson">
+        <h2 id="lesson-title">Lesson: Loading...</h2>
+        <p class="animation">Learn through fun animations and games!</p>
+        <canvas id="game-canvas"></canvas>
+        <div id="voice-assistant">
+            <button onclick="speakLesson()">Listen to Voice Assistant</button>
+        </div>
+        <h3>Assignment</h3>
+        <p id="assignment-desc">Complete the task and upload proof.</p>
+        <input type="file" id="assignment-upload" accept="image/*,video/*">
+        <button onclick="submitAssignment()">Submit Assignment</button>
+        <div id="ai-feedback"></div>
+        <div id="doubt-section">
+            <button onclick="toggleDoubt()">Ask a Doubt</button>
+            <textarea id="doubt-text" class="hidden" placeholder="Type your doubt..."></textarea>
+            <button onclick="submitDoubt()" class="hidden">Submit Doubt</button>
+            <div id="doubt-response"></div>
+        </div>
+    </div>
+
+    <div class="container hidden" id="news-section">
+        <h2>Daily News & Opportunities in Bengaluru</h2>
+        <p>Stay updated with hackathons, jobs, internships, and more!</p>
+        <ul id="news-list">
+            <!-- Dynamically populated -->
+        </ul>
+        <button onclick="loadMoreNews()">Load More</button>
+    </div>
+
+    <div class="container hidden" id="mock-test">
+        <h2>Mock Test</h2>
+        <p>Practice for UPSC, GATE, or other exams.</p>
+        <button onclick="startMockTest()">Start Test</button>
+        <div id="mock-questions" class="hidden">
+            <p id="mock-question">Loading...</p>
+            <input type="text" id="mock-answer" placeholder="Answer">
+            <button onclick="submitMockAnswer()">Submit</button>
+        </div>
+        <div id="mock-feedback"></div>
+    </div>
+
+    <script>
+        // Language Translations (Basic - Expand as needed)
+        const translations = {
+            en: {
+                register: "Register to Start Your Journey",
+                selectDomains: "Select Your Learning Domains",
+                proceed: "Proceed",
+                assessment: "Initial Assessment",
+                startAssessment: "Start Assessment",
+                learningPath: "Your Personalized Learning Path",
+                startLesson: "Start Lesson",
+                lesson: "Lesson: ",
+                assignment: "Assignment",
+                submitAssignment: "Submit Assignment",
+                askDoubt: "Ask a Doubt",
+                submitDoubt: "Submit Doubt",
+                news: "Daily News & Opportunities in Bengaluru",
+                loadMore: "Load More",
+                mockTest: "Mock Test",
+                startTest: "Start Test",
+                submit: "Submit"
+            },
+            hi: {
+                register: "अपनी यात्रा शुरू करने के लिए पंजीकरण करें",
+                selectDomains: "अपने सीखने के डोमेन चुनें",
+                proceed: "आगे बढ़ें",
+                assessment: "प्रारंभिक मूल्यांकन",
+                startAssessment: "मूल्यांकन शुरू करें",
+                learningPath: "आपका व्यक्तिगत सीखने का पथ",
+                startLesson: "पाठ शुरू करें",
+                lesson: "पाठ: ",
+                assignment: "असाइनमेंट",
+                submitAssignment: "असाइनमेंट सबमिट करें",
+                askDoubt: "एक संदेह पूछें",
+                submitDoubt: "संदेह सबमिट करें",
+                news: "दैनिक समाचार और अवसर बेंगलुरु में",
+                loadMore: "और लोड करें",
+                mockTest: "मॉक टेस्ट",
+                startTest: "टेस्ट शुरू करें",
+                submit: "सबमिट"
+            },
+            kn: {
+                register: "ನಿಮ್ಮ ಪ್ರಯಾಣವನ್ನು ಪ್ರಾರಂಭಿಸಲು ನೋಂದಣಿ ಮಾಡಿ",
+                selectDomains: "ನಿಮ್ಮ ಕಲಿಕೆ ಡೊಮೇನ್‌ಗಳನ್ನು ಆಯ್ಕೆಮಾಡಿ",
+                proceed: "ಮುಂದುವರಿಯಿರಿ",
+                assessment: "ಪ್ರಾರಂಭಿಕ ಮೌಲ್ಯಮಾಪನ",
+                startAssessment: "ಮೌಲ್ಯಮಾಪನ ಪ್ರಾರಂಭಿಸಿ",
+                learningPath: "ನಿಮ್ಮ ವೈಯಕ್ತಿಕ ಕಲಿಕೆ ಮಾರ್ಗ",
+                startLesson: "ಪಾಠ ಪ್ರಾರಂಭಿಸಿ",
+                lesson: "ಪಾಠ: ",
+                assignment: "ಕಾರ್ಯಯೋಜನೆ",
+                submitAssignment: "ಕಾರ್ಯಯೋಜನೆ ಸಲ್ಲಿಸಿ",
+                askDoubt: "ಒಂದು ಸಂದೇಹ ಕೇಳಿ",
+                submitDoubt: "ಸಂದೇಹ ಸಲ್ಲಿಸಿ",
+                news: "ದೈನಂದಿನ ಸುದ್ದಿ ಮತ್ತು ಅವಕಾಶಗಳು ಬೆಂಗಳೂರಿನಲ್ಲಿ",
+                loadMore: "ಹೆಚ್ಚು ಲೋಡ್ ಮಾಡಿ",
+                mockTest: "ಮಾಕ್ ಟೆಸ್ಟ್",
+                startTest: "ಟೆಸ್ಟ್ ಪ್ರಾರಂಭಿಸಿ",
+                submit: "ಸಲ್ಲಿಸಿ"
+            }
+        };
+
+        let currentLanguage = 'en';
+        function changeLanguage() {
+            currentLanguage = document.getElementById('language-select').value;
+            const trans = translations[currentLanguage];
+            document.querySelector('#registration h2').textContent = trans.register;
+            document.querySelector('#domain-selection h2').textContent = trans.selectDomains;
+            document.querySelector('#domain-selection button').textContent = trans.proceed;
+            document.querySelector('#assessment h2').textContent = trans.assessment;
+            document.querySelector('#assessment button').textContent = trans.startAssessment;
+            document.querySelector('#learning-path h2').textContent = trans.learningPath;
+            document.querySelector('#learning-path button').textContent = trans.startLesson;
+            document.querySelector('#lesson h3').textContent = trans.assignment;
+            document.querySelector('#lesson button[onclick="submitAssignment()"]').textContent = trans.submitAssignment;
+            document.querySelector('#doubt-section button[onclick="toggleDoubt()"]').textContent = trans.askDoubt;
+            document.querySelector('#doubt-section button[onclick="submitDoubt()"]').textContent = trans.submitDoubt;
+            document.querySelector('#news-section h2').textContent = trans.news;
+            document.querySelector('#news-section button').textContent = trans.loadMore;
+            document.querySelector('#mock-test h2').textContent = trans.mockTest;
+            document.querySelector('#mock-test button[onclick="startMockTest()"]').textContent = trans.startTest;
+            document.querySelector('#mock-questions button').textContent = trans.submit;
+            // Update other texts dynamically as needed
+        }
+
+        // Domain Selection
+        let selectedDomains = [];
+        function toggleDomain(element) {
+            const domain = element.dataset.domain;
+            const index = selectedDomains.indexOf(domain);
+            if (index > -1) {
+                selectedDomains.splice(index, 1);
+                element.classList.remove('selected');
+                document.getElementById(`sub-${domain}`)?.classList.add('hidden');
+            } else {
+                selectedDomains.push(domain);
+                element.classList.add('selected');
+                document.getElementById(`sub-${domain}`)?.classList.remove('hidden');
+            }
+        }
+
+        function proceedToAssessment() {
+            if (selectedDomains.length === 0) {
+                alert('Please select at least one domain!');
+                return;
+            }
+            document.getElementById('domain-selection').classList.add('hidden');
+            document.getElementById('assessment').classList.remove('hidden');
+        }
+
+        // Assessment
+        let currentDomainIndex = 0;
+        let scores = {};
+        const domainQuestions = {
+            singing: [
+                { question: "What is a basic musical scale?", answer: "do re mi fa so la ti do" },
+                { question: "Name one breathing technique for singing.", answer: "diaphragmatic breathing" }
+            ],
+            dancing: [
+                { question: "What is a plié in dance?", answer: "a bend of the knees" },
+                { question: "Name a basic hip-hop move.", answer: "pop and lock" }
+            ],
+            drawing: [
+                { question: "What is shading in drawing?", answer: "adding value to create depth" },
+                { question: "Name a tool for drawing.", answer: "pencil" }
+            ],
+            business: [
+                { question: "What is SWOT analysis?", answer: "strengths weaknesses opportunities threats" },
+                { question: "Define revenue.", answer: "income from sales" }
+            ],
+            coding: [
+                { question: "What does HTML stand for?", answer: "hypertext markup language" },
+                { question: "Write a simple for loop in JS.", answer: "for(let i=0;i<5;i++)" }
+            ],
+            upsc: [
+                { question: "What is the capital of India?", answer: "new delhi" },
+                { question: "Name the first Prime Minister of India.", answer: "jawaharlal nehru" }
+            ]
+        };
+
+        function startAssessment() {
+            const level = document.getElementById('experience-level').value;
+            // Adjust question difficulty based on level (simplified)
+            currentDomainIndex = 0;
+            scores = {};
+            selectedDomains.forEach(d => scores[d] = 0);
+            document.getElementById('test-questions').classList.remove('hidden');
+            loadNextQuestion();
+        }
+
+        let currentQuestionIndex = 0;
+        function loadNextQuestion() {
+            const domain = selectedDomains[currentDomainIndex];
+            if (!domain) {
+                finishAssessment();
+                return;
+            }
+            const questions = domainQuestions[domain] || [];
+            if (currentQuestionIndex >= questions.length) {
+                currentDomainIndex++;
+                currentQuestionIndex = 0;
+                loadNextQuestion();
+                return;
+            }
+            document.getElementById('question-text').textContent = questions[currentQuestionIndex].question;
+            document.getElementById('answer').value = '';
+        }
+
+        function submitAnswer() {
+            const domain = selectedDomains[currentDomainIndex];
+            const questions = domainQuestions[domain];
+            const userAnswer = document.getElementById('answer').value.toLowerCase();
+            const correctAnswer = questions[currentQuestionIndex].answer.toLowerCase();
+            if (userAnswer.includes(correctAnswer.split(' ')[0])) { // Fuzzy match
+                scores[domain] += 50;
+            }
+            currentQuestionIndex++;
+            loadNextQuestion();
+        }
+
+        function finishAssessment() {
+            document.getElementById('assessment').classList.add('hidden');
+            generatePaths();
+            document.getElementById('learning-path').classList.remove('hidden');
+        }
+
+        // Learning Path
+        let currentPaths = {};
+        const predefinedPaths = {
+            singing: {
+                new: ['Basics of Notes', 'Breathing Exercises', 'Simple Songs', 'Test', 'Assignment: Record a Note'],
+                basic: ['Scales Practice', 'Vocal Warm-ups', 'Test', 'Assignment: Sing a Song'],
+                intermediate: ['Advanced Techniques', 'Harmony', 'Test', 'Assignment: Perform Duet'],
+                advanced: ['Professional Tips', 'Stage Presence', 'Test', 'Assignment: Original Composition']
+            },
+            // Add similar for other domains
+            dancing: {
+                new: ['Basic Steps', 'Rhythm Training', 'Test', 'Assignment: Video of Steps'],
+                basic: ['Choreography Basics', 'Test', 'Assignment: Dance Routine']
+            },
+            drawing: {
+                new: ['Lines and Shapes', 'Shading', 'Test', 'Assignment: Draw a Simple Object'],
+                basic: ['Perspective', 'Test', 'Assignment: Sketch a Scene']
+            },
+            business: {
+                new: ['What is Business?', 'SWOT', 'Test', 'Assignment: Business Plan Outline'],
+                basic: ['Marketing Basics', 'Test', 'Assignment: Market Research']
+            },
+            coding: {
+                new: ['Hello World', 'Variables', 'Test', 'Assignment: Simple Script'],
+                basic: ['Loops and Functions', 'Test', 'Assignment: Build a Calculator']
+            },
+            upsc: {
+                new: ['Syllabus Overview', 'History Basics', 'Test', 'Assignment: Essay on Topic'],
+                basic: ['Current Affairs', 'Test', 'Mock Exam']
+            }
+        };
+
+        function generatePaths() {
+            const level = document.getElementById('experience-level').value;
+            selectedDomains.forEach(domain => {
+                let path = predefinedPaths[domain][level] || predefinedPaths[domain].new;
+                // Adjust based on score
+                const score = scores[domain] || 0;
+                if (score > 100) path = predefinedPaths[domain].advanced;
+                else if (score > 50) path = predefinedPaths[domain].intermediate;
+                currentPaths[domain] = path;
+            });
+            // For demo, show first domain's path
+            const firstDomain = selectedDomains[0];
+            document.getElementById('path-steps').innerHTML = currentPaths[firstDomain].map(step => `<li class="animation">${step}</li>`).join('');
+            // Show news and mock if relevant domains
+            if (selectedDomains.includes('upsc') || selectedDomains.includes('coding')) {
+                document.getElementById('news-section').classList.remove('hidden');
+                document.getElementById('mock-test').classList.remove('hidden');
+                loadNews();
+            }
+        }
+
+        // Lesson
+        let currentLessonIndex = 0;
+        let currentDomain = '';
+        function startLesson() {
+            currentDomain = selectedDomains[0]; // Simplify for demo, handle multi in full app
+            currentLessonIndex = 0;
+            document.getElementById('learning-path').classList.add('hidden');
+            document.getElementById('lesson').classList.remove('hidden');
+            loadLesson();
+        }
+
+        function loadLesson() {
+            const path = currentPaths[currentDomain];
+            const lesson = path[currentLessonIndex];
+            document.getElementById('lesson-title').textContent = translations[currentLanguage].lesson + lesson;
+            document.getElementById('assignment-desc').textContent = 'For example: ' + (lesson.includes('Assignment') ? lesson : 'Practice the lesson.');
+            initGame(); // Start simple game
+            updateProgress();
+        }
+
+        function updateProgress() {
+            const totalSteps = currentPaths[currentDomain].length;
+            const prog = (currentLessonIndex / totalSteps) * 100;
+            document.getElementById('progress').style.width = `${prog}%`;
+        }
+
+        // Simple Game with Canvas (e.g., Click to Match Notes for Singing)
+        function initGame() {
+            const canvas = document.getElementById('game-canvas');
+            const ctx = canvas.getContext('2d');
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            ctx.fillStyle = '#4CAF50';
+            ctx.font = '20px Arial';
+            ctx.fillText('Click to Play Game!', 100, 100);
+            canvas.onclick = playGame;
+        }
+
+        let gameScore = 0;
+        function playGame() {
+            gameScore += 10;
+            alert(`Great! Game Score: ${gameScore}. Fun way to learn!`);
+            // In full app, more complex game logic
+        }
+
+        // Voice Assistant (Web Speech API)
+        function speakLesson() {
+            if ('speechSynthesis' in window) {
+                const utterance = new SpeechSynthesisUtterance(document.getElementById('lesson-title').textContent);
+                utterance.lang = currentLanguage === 'hi' ? 'hi-IN' : currentLanguage === 'kn' ? 'kn-IN' : 'en-US';
+                speechSynthesis.speak(utterance);
+            } else {
+                alert('Voice assistant not supported in this browser.');
+            }
+        }
+
+        // Assignment Submit (Simulate AI Feedback)
+        function submitAssignment() {
+            const file = document.getElementById('assignment-upload').files[0];
+            if (!file) {
+                alert('Please upload a file!');
+                return;
+            }
+            // Security: Warn about no faces
+            alert('Reminder: Do not upload images with faces for security.');
+            // Simulate upload and feedback
+            document.getElementById('ai-feedback').textContent = 'AI Feedback: Great job! Your drawing/video looks correct. Moving to next lesson.';
+            currentLessonIndex++;
+            if (currentLessonIndex < currentPaths[currentDomain].length) {
+                loadLesson();
+            } else {
+                alert('Path Completed! Great work, Tanushree!');
+            }
+        }
+
+        // Doubt Section
+        function toggleDoubt() {
+            document.getElementById('doubt-text').classList.toggle('hidden');
+            document.getElementById('doubt-text').nextElementSibling.classList.toggle('hidden');
+        }
+
+        function submitDoubt() {
+            const doubt = document.getElementById('doubt-text').value;
+            // Simulate AI response
+            document.getElementById('doubt-response').textContent = `AI Tutor: For your doubt "${doubt}", here's an explanation: [Simulated answer].`;
+            toggleDoubt();
+        }
+
+        // News Section (Hardcoded for Demo - In full app, fetch from API)
+        const newsItems = [
+            'Hackathon at Bengaluru Tech Park on Feb 21, 2026!',
+            'Job Opening: Software Engineer at Infosys.',
+            'Internship Opportunity: AI Developer at xAI.',
+            'UPSC Mock Test Series starting soon.',
+            'Local Dance Workshop in Koramangala.'
+        ];
+        let newsIndex = 0;
+        function loadNews() {
+            const list = document.getElementById('news-list');
+            for (let i = 0; i < 3; i++) {
+                if (newsIndex >= newsItems.length) return;
+                const li = document.createElement('li');
+                li.textContent = newsItems[newsIndex++];
+                list.appendChild(li);
+            }
+        }
+
+        function loadMoreNews() {
+            loadNews();
+        }
+
+        // Mock Test
+        const mockQuestions = {
+            upsc: [
+                { question: "Who is the President of India in 2026?", answer: "droupadi murmu" }, // Placeholder
+                { question: "What is GDP?", answer: "gross domestic product" }
+            ],
+            // Add for GATE, etc.
+        };
+        let mockIndex = 0;
+        let mockScore = 0;
+        function startMockTest() {
+            const domain = 'upsc'; // Assume for demo
+            mockIndex = 0;
+            mockScore = 0;
+            document.getElementById('mock-questions').classList.remove('hidden');
+            loadMockQuestion(domain);
+        }
+
+        function loadMockQuestion(domain) {
+            const questions = mockQuestions[domain] || [];
+            if (mockIndex >= questions.length) {
+                document.getElementById('mock-feedback').textContent = `Test Complete! Score: ${mockScore}/${questions.length * 50}`;
+                return;
+            }
+            document.getElementById('mock-question').textContent = questions[mockIndex].question;
+            document.getElementById('mock-answer').value = '';
+        }
+
+        function submitMockAnswer() {
+            const domain = 'upsc';
+            const questions = mockQuestions[domain];
+            const userAnswer = document.getElementById('mock-answer').value.toLowerCase();
+            const correctAnswer = questions[mockIndex].answer.toLowerCase();
+            if (userAnswer.includes(correctAnswer.split(' ')[0])) {
+                mockScore += 50;
+            }
+            mockIndex++;
+            loadMockQuestion(domain);
+        }
+
+        // OTP Simulation
+        let generatedOTP = '';
+        function sendOTP() {
+            generatedOTP = Math.floor(100000 + Math.random() * 900000).toString();
+            const email = document.getElementById('email').value;
+            alert(`OTP sent to ${email}: ${generatedOTP} (Simulation - In real app, use email/SMS API)`);
+            document.getElementById('otp').classList.remove('hidden');
+            document.getElementById('verify-btn').classList.remove('hidden');
+        }
+
+        function verifyOTP() {
+            const enteredOTP = document.getElementById('otp').value;
+            if (enteredOTP === generatedOTP) {
+                alert('Verified! Welcome, Tanushree.');
+                document.getElementById('registration').classList.add('hidden');
+                document.getElementById('domain-selection').classList.remove('hidden');
+            } else {
+                alert('Invalid OTP. Try again.');
+            }
+        }
+
+        // Initialize
+        changeLanguage();
+    </script>
+</body>
+</html>
